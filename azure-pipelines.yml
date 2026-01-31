@@ -1,0 +1,33 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  terraformVersion: '1.6.0'
+
+steps:
+# Install Terraform
+- task: TerraformInstaller@1
+  displayName: 'Install Terraform'
+  inputs:
+    terraformVersion: $(terraformVersion)
+
+# Terraform Init
+- script: |
+    cd terraform
+    terraform init -input=false
+  displayName: 'Terraform Init'
+
+# Terraform Validate
+- script: |
+    cd terraform
+    terraform validate
+  displayName: 'Terraform Validate'
+
+# Terraform Plan
+- script: |
+    cd terraform
+    terraform plan -input=false
+  displayName: 'Terraform Plan'

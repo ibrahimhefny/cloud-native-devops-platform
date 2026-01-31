@@ -1,0 +1,48 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+.terraform/
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+errored.tfstate  # Add this
+
+# Sensitive files
+*.tfvars
+!terraform.tfvars.example  # Allow example file
+!nonprod.tfvars            # If you want to commit env configs
+!prod.tfvars
+
+# AWS
+.aws/
+*.pem
+*.key
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+
+# Helm
+charts/*.tgz
+
+# Kubernetes
+kubeconfig
+*.kubeconfig

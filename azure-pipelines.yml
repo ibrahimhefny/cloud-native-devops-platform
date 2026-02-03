@@ -1,33 +1,123 @@
 trigger:
 - main
 
-pool:
-  vmImage: ubuntu-latest
+parameters:
+- name: action
+  displayName: 'Terraform Action'
+  type: string
+  default: apply
+  values:
+  - apply
+  - destroy
+
+- name: environment
+  displayName: 'Environment'
+  type: string
+  default: nonprod
+  values:
+  - nonprod
+  - prod
 
 variables:
   terraformVersion: '1.6.0'
+  tfvarsFile: '${{ parameters.environment }}.tfvars'
 
-steps:
-# Install Terraform
-- task: TerraformInstaller@1
-  displayName: 'Install Terraform'
-  inputs:
-    terraformVersion: $(terraformVersion)
+stages:
 
-# Terraform Init
-- script: |
-    cd terraform
-    terraform init -input=false
-  displayName: 'Terraform Init'
+# =========================
+# Stage 1: Init & Plan
+# =========================
+- stage: InitAndPlan
+  displayName: 'Terraform Init & Plan'
+  jobs:
+  - job: terraform_plan
+    pool:
+      vmImage: ubuntu-latest
+    variables:
+    - group: aws-credentials
+    steps:
 
-# Terraform Validate
-- script: |
-    cd terraform
-    terraform validate
-  displayName: 'Terraform Validate'
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: $(terraformVersion)
 
-# Terraform Plan
-- script: |
-    cd terraform
-    terraform plan -input=false
-  displayName: 'Terraform Plan'
+    - script: |
+        cd terraform
+        terraform init -input=false
+      displayName: 'Terraform Init'
+      env:
+        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+        AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+
+    - script: |
+        cd terraform
+        terraform validate
+      displayName: 'Terraform Validate'
+
+    - script: |
+        cd terraform
+        terraform plan -var-file=$(tfvarsFile) -out=tfplan
+      displayName: 'Terraform Plan'
+
+    - publish: terraform/tfplan
+      artifact: terraform-plan
+
+
+# =========================
+# Stage 2: Apply
+# =========================
+- stage: Apply
+  displayName: 'Terraform Apply'
+  dependsOn: InitAndPlan
+  condition: and(succeeded(), eq('${{ parameters.action }}', 'apply'))
+  jobs:
+  - deployment: terraform_apply
+    environment: terraform-${{ parameters.environment }}
+    pool:
+      vmImage: ubuntu-latest
+    variables:
+    - group: aws-credentials
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: terraform-plan
+
+          - script: |
+              cd terraform
+              terraform apply -auto-approve tfplan
+            displayName: 'Terraform Apply'
+            env:
+              AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+              AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+              AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+
+
+# =========================
+# Stage 3: Destroy
+# =========================
+- stage: Destroy
+  displayName: 'Terraform Destroy'
+  dependsOn: InitAndPlan
+  condition: and(succeeded(), eq('${{ parameters.action }}', 'destroy'))
+  jobs:
+  - deployment: terraform_destroy
+    environment: terraform-${{ parameters.environment }}-destroy
+    pool:
+      vmImage: ubuntu-latest
+    variables:
+    - group: aws-credentials
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: |
+              cd terraform
+              terraform destroy -var-file=$(tfvarsFile) -auto-approve
+            displayName: 'Terraform Destroy'
+            env:
+              AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+              AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+              AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)

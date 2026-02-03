@@ -104,7 +104,7 @@ stages:
   condition: and(succeeded(), eq('${{ parameters.action }}', 'destroy'))
   jobs:
   - deployment: terraform_destroy
-    environment: terraform-${{ parameters.environment }}-destroy
+    environment: terraform-${{ parameters.environment }}
     pool:
       vmImage: ubuntu-latest
     variables:

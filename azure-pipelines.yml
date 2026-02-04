@@ -55,14 +55,14 @@ stages:
         terraform validate
       displayName: 'Terraform Validate'
 
-   - script: |
-    cd terraform
-    terraform plan -var-file=$(tfvarsFile) -out=tfplan
-  displayName: 'Terraform Plan'
-  env:
-    AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-    AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-    AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+    - script: |
+        cd terraform
+        terraform plan -var-file=$(tfvarsFile) -out=tfplan
+      displayName: 'Terraform Plan'
+   env:
+     AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+     AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+     AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
 
 
     - publish: terraform/tfplan

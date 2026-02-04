@@ -106,12 +106,13 @@ stages:
 
     - script: |
         cd terraform
-        terraform apply -auto-approve tfplan
+        terraform apply -auto-approve $(Pipeline.Workspace)/terraform-plan/tfplan
       displayName: 'Terraform Apply'
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
         AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+
 
 
 

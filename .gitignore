@@ -12,7 +12,7 @@ override.tf.json
 errored.tfstate  # Add this
 
 # Sensitive files
-*.tfvars
+#*.tfvars
 !terraform.tfvars.example  # Allow example file
 !nonprod.tfvars            # If you want to commit env configs
 !prod.tfvars

@@ -83,9 +83,12 @@ stages:
     variables:
     - group: aws-credentials
     steps:
+     - task: TerraformInstaller@1
+      displayName: 'Install Terraform'
+      inputs:
+        terraformVersion: $(terraformVersion)
     - download: current
       artifact: terraform-plan
-
     - script: |
         cd terraform
         terraform plan -var-file=$(tfvarsFile) -out=tfplan
@@ -112,6 +115,10 @@ stages:
     variables:
     - group: aws-credentials
     steps:
+     - task: TerraformInstaller@1
+      displayName: 'Install Terraform'
+      inputs:
+        terraformVersion: $(terraformVersion)
     - script: |
         cd terraform
         terraform destroy -var-file=$(tfvarsFile) -auto-approve

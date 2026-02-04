@@ -72,6 +72,9 @@ stages:
 # =========================
 # Stage 2: Apply
 # =========================
+# =========================
+# Stage 2: Apply
+# =========================
 - stage: Apply
   displayName: 'Terraform Apply'
   dependsOn: InitAndPlan
@@ -83,6 +86,7 @@ stages:
     variables:
     - group: aws-credentials
     steps:
+
     - task: TerraformInstaller@1
       displayName: 'Install Terraform'
       inputs:
@@ -90,15 +94,24 @@ stages:
 
     - download: current
       artifact: terraform-plan
+
     - script: |
         cd terraform
-        terraform plan -var-file=$(tfvarsFile) -out=tfplan
-      displayName: 'Terraform Plan'
+        terraform init -reconfigure
+      displayName: 'Terraform Init (Apply)'
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
         AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
 
+    - script: |
+        cd terraform
+        terraform apply -auto-approve tfplan
+      displayName: 'Terraform Apply'
+      env:
+        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+        AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
 
 
 

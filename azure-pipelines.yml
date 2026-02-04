@@ -72,27 +72,24 @@ stages:
   dependsOn: InitAndPlan
   condition: and(succeeded(), eq('${{ parameters.action }}', 'apply'))
   jobs:
-  - deployment: terraform_apply
-    environment: terraform-${{ parameters.environment }}
+  - job: terraform_apply
     pool:
       vmImage: ubuntu-latest
     variables:
     - group: aws-credentials
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - download: current
-            artifact: terraform-plan
+    steps:
+    - download: current
+      artifact: terraform-plan
 
-          - script: |
-              cd terraform
-              terraform apply -auto-approve tfplan
-            displayName: 'Terraform Apply'
-            env:
-              AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-              AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-              AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+    - script: |
+        cd terraform
+        terraform apply -auto-approve tfplan
+      displayName: 'Terraform Apply'
+      env:
+        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+        AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+
 
 
 # =========================
@@ -103,21 +100,18 @@ stages:
   dependsOn: InitAndPlan
   condition: and(succeeded(), eq('${{ parameters.action }}', 'destroy'))
   jobs:
-  - deployment: terraform_destroy
-    environment: terraform-${{ parameters.environment }}
+  - job: terraform_destroy
     pool:
       vmImage: ubuntu-latest
     variables:
     - group: aws-credentials
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - script: |
-              cd terraform
-              terraform destroy -var-file=$(tfvarsFile) -auto-approve
-            displayName: 'Terraform Destroy'
-            env:
-              AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-              AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-              AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+    steps:
+    - script: |
+        cd terraform
+        terraform destroy -var-file=$(tfvarsFile) -auto-approve
+      displayName: 'Terraform Destroy'
+      env:
+        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+        AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+

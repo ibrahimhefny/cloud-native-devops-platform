@@ -59,10 +59,10 @@ stages:
         cd terraform
         terraform plan -var-file=$(tfvarsFile) -out=tfplan
       displayName: 'Terraform Plan'
-   env:
-     AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-     AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-     AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+      env:
+        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+        AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
 
 
     - publish: terraform/tfplan
@@ -88,12 +88,13 @@ stages:
 
     - script: |
         cd terraform
-        terraform apply -auto-approve tfplan
-      displayName: 'Terraform Apply'
+        terraform plan -var-file=$(tfvarsFile) -out=tfplan
+      displayName: 'Terraform Plan'
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
         AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+
 
 
 
@@ -119,4 +120,3 @@ stages:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
         AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
-

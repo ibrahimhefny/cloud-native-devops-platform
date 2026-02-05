@@ -2,8 +2,8 @@ trigger: none
 
 resources:
   pipelines:
-  - pipeline: ibrahimhefny.cloud-native-devops-platform
-    source: ibrahimhefny.cloud-native-devops-platform         
+  - pipeline: terraform
+    source: ibrahimhefny.cloud-native-devops-platform
     trigger:
       branches:
         include:
@@ -20,12 +20,6 @@ parameters:
 
 variables:
 - group: aws-credentials
-
-- name: clusterName
-  value: '${{ parameters.environment }}-eks'
-
-- name: awsRegion
-  value: $(AWS_DEFAULT_REGION)
 
 - name: helmRelease
   value: my-app
@@ -45,22 +39,36 @@ stages:
   displayName: 'Helm Deploy'
   jobs:
   - job: deploy
+    displayName: 'Deploy to EKS using Helm'
     steps:
 
+    # 1️⃣ Install Helm
     - script: |
         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
       displayName: 'Install Helm'
 
+    # 2️⃣ Download EKS info from Terraform pipeline
+    - download: terraform
+      artifact: eks-info
+      displayName: 'Download EKS info'
+
+    # 3️⃣ Configure kubeconfig dynamically
     - script: |
+        CLUSTER_NAME=$(cat $(Pipeline.Workspace)/eks-info/cluster_name.txt)
+        REGION=$(cat $(Pipeline.Workspace)/eks-info/region.txt)
+
+        echo "Using cluster: $CLUSTER_NAME"
+        echo "Using region: $REGION"
+
         aws eks update-kubeconfig \
-          --name $(clusterName) \
-          --region $(awsRegion)
+          --name $CLUSTER_NAME \
+          --region $REGION
       displayName: 'Configure kubeconfig'
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-        AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
 
+    # 4️⃣ Helm deploy
     - script: |
         helm upgrade --install $(helmRelease) ./helm/my-app \
           --namespace $(helmNamespace) \

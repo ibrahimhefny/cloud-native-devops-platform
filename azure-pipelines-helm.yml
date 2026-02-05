@@ -1,0 +1,39 @@
+trigger: none
+
+resources:
+  pipelines:
+  - pipeline: terraformInfra
+    source: terraform-infra          
+    trigger:
+      branches:
+        include:
+        - main
+
+parameters:
+- name: environment
+  displayName: 'Environment'
+  type: string
+  default: nonprod
+  values:
+  - nonprod
+  - prod
+
+variables:
+- group: aws-credentials
+
+- name: clusterName
+  value: '${{ parameters.environment }}-eks'
+
+- name: awsRegion
+  value: $(AWS_DEFAULT_REGION)
+
+- name: helmRelease
+  value: my-app
+
+- name: helmNamespace
+  value: my-app
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:

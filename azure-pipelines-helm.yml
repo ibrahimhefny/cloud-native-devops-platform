@@ -2,8 +2,8 @@ trigger: none
 
 resources:
   pipelines:
-  - pipeline: terraformInfra
-    source: terraform-infra          
+  - pipeline: ibrahimhefny.cloud-native-devops-platform
+    source: ibrahimhefny.cloud-native-devops-platform         
     trigger:
       branches:
         include:

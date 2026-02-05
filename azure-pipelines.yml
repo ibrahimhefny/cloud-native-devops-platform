@@ -64,9 +64,9 @@ stages:
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
         AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
 
+
     - publish: terraform/tfplan
       artifact: terraform-plan
-
 
 # =========================
 # Stage 2: Apply
@@ -84,6 +84,7 @@ stages:
     steps:
 
     - task: TerraformInstaller@1
+      displayName: 'Install Terraform'
       inputs:
         terraformVersion: $(terraformVersion)
 
@@ -109,6 +110,8 @@ stages:
         AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
 
 
+
+
 # =========================
 # Stage 3: Destroy
 # =========================
@@ -125,13 +128,14 @@ stages:
     steps:
 
     - task: TerraformInstaller@1
+      displayName: 'Install Terraform'
       inputs:
         terraformVersion: $(terraformVersion)
 
     - script: |
         cd terraform
         terraform init -reconfigure
-      displayName: 'Terraform Init (Destroy)'
+      displayName: 'Terraform Init (Reconfigure)'
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)

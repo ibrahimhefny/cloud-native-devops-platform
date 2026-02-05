@@ -64,7 +64,6 @@ stages:
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
         AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
 
-
     - publish: terraform/tfplan
       artifact: terraform-plan
 
@@ -109,8 +108,27 @@ stages:
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
         AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
 
+    # =========================
+    # Export EKS outputs
+    # =========================
+    - script: |
+        cd terraform
+        terraform output -raw cluster_name > cluster_name.txt
+        terraform output -raw region > region.txt
+      displayName: 'Export EKS outputs'
+      env:
+        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+        AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
 
+    # =========================
+    # Publish EKS info artifact
+    # =========================
+    - publish: terraform/cluster_name.txt
+      artifact: eks-info
 
+    - publish: terraform/region.txt
+      artifact: eks-info
 
 # =========================
 # Stage 3: Destroy

@@ -30,3 +30,6 @@ output "cluster_security_group_id" {
 output "oidc_issuer_url" {
   value = module.eks.oidc_issuer_url
 }
+output "region" {
+  value = var.region
+}

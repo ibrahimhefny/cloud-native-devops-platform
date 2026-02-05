@@ -37,3 +37,33 @@ pool:
   vmImage: ubuntu-latest
 
 stages:
+
+# =========================
+# Stage: Helm Deploy
+# =========================
+- stage: HelmDeploy
+  displayName: 'Helm Deploy'
+  jobs:
+  - job: deploy
+    steps:
+
+    - script: |
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      displayName: 'Install Helm'
+
+    - script: |
+        aws eks update-kubeconfig \
+          --name $(clusterName) \
+          --region $(awsRegion)
+      displayName: 'Configure kubeconfig'
+      env:
+        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+        AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+
+    - script: |
+        helm upgrade --install $(helmRelease) ./helm/my-app \
+          --namespace $(helmNamespace) \
+          --create-namespace \
+          -f ./helm/my-app/values-${{ parameters.environment }}.yaml
+      displayName: 'Helm Deploy'

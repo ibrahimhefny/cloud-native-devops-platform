@@ -68,10 +68,6 @@ stages:
     - publish: terraform/tfplan
       artifact: terraform-plan
 
-
-# =========================
-# Stage 2: Apply
-# =========================
 # =========================
 # Stage 2: Apply
 # =========================

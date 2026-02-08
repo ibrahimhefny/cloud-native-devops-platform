@@ -60,3 +60,11 @@ jobs:
         run: |
           cd terraform
           terraform destroy -auto-approve -var-file=${{ github.event.inputs.environment }}.tfvars
+
+      - name: Terraform Import (one-time fix)
+        run: |
+          cd terraform
+          terraform import module.eks.aws_cloudwatch_log_group.this /aws/eks/nonprod-eks/cluster || true
+          terraform import module.iam.aws_iam_role.eks_cluster_role nonprod-eks-cluster-role || true
+          terraform import module.iam.aws_iam_role.eks_node_role nonprod-eks-node-role || true
+

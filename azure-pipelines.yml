@@ -124,11 +124,9 @@ stages:
     # =========================
     # Publish EKS info artifact
     # =========================
-    - publish: terraform/cluster_name.txt
+    - publish: terraform/eks-info
       artifact: eks-info
 
-    - publish: terraform/region.txt
-      artifact: eks-info
 
 # =========================
 # Stage 3: Destroy

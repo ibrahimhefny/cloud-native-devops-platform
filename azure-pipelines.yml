@@ -22,6 +22,10 @@ variables:
   terraformVersion: '1.6.0'
   tfvarsFile: '${{ parameters.environment }}.tfvars'
 
+pool:
+  name: self-hosted-linux
+
+
 stages:
 
 # =========================

@@ -3,7 +3,7 @@ trigger:
 
 parameters:
 - name: action
-  displayName: 'Terraform Action'
+  displayName: Terraform Action
   type: string
   default: apply
   values:
@@ -11,7 +11,7 @@ parameters:
   - destroy
 
 - name: environment
-  displayName: 'Environment'
+  displayName: Environment
   type: string
   default: nonprod
   values:
@@ -19,12 +19,10 @@ parameters:
   - prod
 
 variables:
-  terraformVersion: '1.6.0'
   tfvarsFile: '${{ parameters.environment }}.tfvars'
 
 pool:
   name: self-hosted-linux
-
 
 stages:
 
@@ -32,23 +30,20 @@ stages:
 # Stage 1: Init & Plan
 # =========================
 - stage: InitAndPlan
-  displayName: 'Terraform Init & Plan'
+  displayName: Terraform Init & Plan
   jobs:
   - job: terraform_plan
-    pool:
-      vmImage: ubuntu-latest
     variables:
     - group: aws-credentials
     steps:
 
-    - task: TerraformInstaller@1
-      inputs:
-        terraformVersion: $(terraformVersion)
+    - script: terraform version
+      displayName: Check Terraform
 
     - script: |
         cd terraform
         terraform init -input=false
-      displayName: 'Terraform Init'
+      displayName: Terraform Init
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
@@ -57,12 +52,12 @@ stages:
     - script: |
         cd terraform
         terraform validate
-      displayName: 'Terraform Validate'
+      displayName: Terraform Validate
 
     - script: |
         cd terraform
         terraform plan -var-file=$(tfvarsFile) -out=tfplan
-      displayName: 'Terraform Plan'
+      displayName: Terraform Plan
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
@@ -75,21 +70,14 @@ stages:
 # Stage 2: Apply
 # =========================
 - stage: Apply
-  displayName: 'Terraform Apply'
+  displayName: Terraform Apply
   dependsOn: InitAndPlan
   condition: and(succeeded(), eq('${{ parameters.action }}', 'apply'))
   jobs:
   - job: terraform_apply
-    pool:
-      vmImage: ubuntu-latest
     variables:
     - group: aws-credentials
     steps:
-
-    - task: TerraformInstaller@1
-      displayName: 'Install Terraform'
-      inputs:
-        terraformVersion: $(terraformVersion)
 
     - download: current
       artifact: terraform-plan
@@ -97,7 +85,7 @@ stages:
     - script: |
         cd terraform
         terraform init -reconfigure
-      displayName: 'Terraform Init (Apply)'
+      displayName: Terraform Init (Apply)
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
@@ -106,56 +94,29 @@ stages:
     - script: |
         cd terraform
         terraform apply -auto-approve $(Pipeline.Workspace)/terraform-plan/tfplan
-      displayName: 'Terraform Apply'
+      displayName: Terraform Apply
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
         AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
-
-    # =========================
-    # Export EKS outputs
-    # =========================
-    - script: |
-        cd terraform
-        terraform output -raw cluster_name > cluster_name.txt
-        terraform output -raw region > region.txt
-      displayName: 'Export EKS outputs'
-      env:
-        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-        AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
-
-    # =========================
-    # Publish EKS info artifact
-    # =========================
-    - publish: terraform/eks-info
-      artifact: eks-info
-
 
 # =========================
 # Stage 3: Destroy
 # =========================
 - stage: Destroy
-  displayName: 'Terraform Destroy'
+  displayName: Terraform Destroy
   dependsOn: InitAndPlan
   condition: and(succeeded(), eq('${{ parameters.action }}', 'destroy'))
   jobs:
   - job: terraform_destroy
-    pool:
-      vmImage: ubuntu-latest
     variables:
     - group: aws-credentials
     steps:
 
-    - task: TerraformInstaller@1
-      displayName: 'Install Terraform'
-      inputs:
-        terraformVersion: $(terraformVersion)
-
     - script: |
         cd terraform
         terraform init -reconfigure
-      displayName: 'Terraform Init (Reconfigure)'
+      displayName: Terraform Init (Destroy)
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
@@ -164,7 +125,7 @@ stages:
     - script: |
         cd terraform
         terraform destroy -var-file=$(tfvarsFile) -auto-approve
-      displayName: 'Terraform Destroy'
+      displayName: Terraform Destroy
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)

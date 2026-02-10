@@ -20,5 +20,5 @@ cluster_version = "1.35"
 node_desired   = 1
 node_min       = 1
 node_max       = 1
-instance_types = ["t2.micro"]
+instance_types = ["t2.small"]
 capacity_type  = "ON_DEMAND"

@@ -3,7 +3,6 @@ trigger:
 
 parameters:
 - name: action
-  displayName: Terraform Action
   type: string
   default: apply
   values:
@@ -11,7 +10,6 @@ parameters:
   - destroy
 
 - name: environment
-  displayName: Environment
   type: string
   default: nonprod
   values:
@@ -27,28 +25,26 @@ pool:
 stages:
 
 # =========================
-# Stage 0: SonarQube Analysis
+# Stage 0: SonarQube
 # =========================
 - stage: SonarQubeAnalysis
-  displayName: SonarQube Code Analysis
   jobs:
   - job: sonar_scan
     steps:
-
     - script: |
         export PATH=$PATH:/opt/sonar-scanner/bin
         sonar-scanner \
           -Dsonar.projectKey=hello-app \
           -Dsonar.sources=. \
           -Dsonar.host.url=http://localhost:9000 \
-          -Dsonar.login=sqp_1c5ac0dc78d47195a0954e621d7cb0c447e645a9
+          -Dsonar.login=$(SONAR_TOKEN)
       displayName: Run Sonar Scan
 
+
 # =========================
-# Stage 1: Init & Plan
+# Stage 1: Plan
 # =========================
 - stage: InitAndPlan
-  displayName: Terraform Init & Plan
   jobs:
   - job: terraform_plan
     variables:
@@ -61,21 +57,9 @@ stages:
     - script: |
         cd terraform
         terraform init -input=false
-      displayName: Terraform Init
-      env:
-        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-        AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
-
-    - script: |
-        cd terraform
         terraform validate
-      displayName: Terraform Validate
-
-    - script: |
-        cd terraform
         terraform plan -var-file=$(tfvarsFile) -out=tfplan
-      displayName: Terraform Plan
+      displayName: Init + Validate + Plan
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
@@ -89,7 +73,6 @@ stages:
 # Stage 2: Apply
 # =========================
 - stage: Apply
-  displayName: Terraform Apply
   dependsOn: InitAndPlan
   condition: and(succeeded(), eq('${{ parameters.action }}', 'apply'))
   jobs:
@@ -102,27 +85,20 @@ stages:
       artifact: terraform-files
 
     - script: |
-        cd terraform
-        terraform init 
-      displayName: Terraform Init (Apply)
-      env:
-        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-        AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
-
-    - script: |
-        terraform apply -auto-approve $(Pipeline.Workspace)/terraform-plan/tfplan
+        cd $(Pipeline.Workspace)/terraform-files
+        terraform init
+        terraform apply -auto-approve tfplan
       displayName: Terraform Apply
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
         AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
 
+
 # =========================
 # Stage 3: Destroy
 # =========================
 - stage: Destroy
-  displayName: Terraform Destroy
   dependsOn: InitAndPlan
   condition: and(succeeded(), eq('${{ parameters.action }}', 'destroy'))
   jobs:
@@ -133,15 +109,7 @@ stages:
 
     - script: |
         cd terraform
-        terraform init -reconfigure
-      displayName: Terraform Init (Destroy)
-      env:
-        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-        AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
-
-    - script: |
-        cd terraform
+        terraform init
         terraform destroy -var-file=$(tfvarsFile) -auto-approve
       displayName: Terraform Destroy
       env:

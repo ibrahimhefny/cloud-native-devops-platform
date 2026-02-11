@@ -42,11 +42,11 @@ stages:
 
 
 # =========================
-# Stage 1: Plan
+# Stage 1: Terraform Apply
 # =========================
-- stage: InitAndPlan
+- stage: Terraform
   jobs:
-  - job: terraform_plan
+  - job: terraform_job
     variables:
     - group: aws-credentials
     steps:
@@ -56,62 +56,43 @@ stages:
 
     - script: |
         cd terraform
-        terraform init -input=false
-        terraform validate
-        terraform plan -var-file=$(tfvarsFile) -out=tfplan
-      displayName: Init + Validate + Plan
-      env:
-        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-        AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
-
-    - publish: terraform
-      artifact: terraform-files
-
-
-# =========================
-# Stage 2: Apply
-# =========================
-- stage: Apply
-  dependsOn: InitAndPlan
-  condition: and(succeeded(), eq('${{ parameters.action }}', 'apply'))
-  jobs:
-  - job: terraform_apply
-    variables:
-    - group: aws-credentials
-    steps:
-
-    - download: current
-      artifact: terraform-files
-
-    - script: |
-        cd $(Pipeline.Workspace)/terraform-files
         terraform init
-        terraform apply -auto-approve tfplan
-      displayName: Terraform Apply
+      displayName: Terraform Init
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
         AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
-
-
-# =========================
-# Stage 3: Destroy
-# =========================
-- stage: Destroy
-  dependsOn: InitAndPlan
-  condition: and(succeeded(), eq('${{ parameters.action }}', 'destroy'))
-  jobs:
-  - job: terraform_destroy
-    variables:
-    - group: aws-credentials
-    steps:
 
     - script: |
         cd terraform
-        terraform init
+        terraform validate
+      displayName: Terraform Validate
+
+    - script: |
+        cd terraform
+        terraform plan -var-file=$(tfvarsFile)
+      displayName: Terraform Plan
+      condition: eq('${{ parameters.action }}', 'apply')
+      env:
+        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+        AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+
+    - script: |
+        cd terraform
+        terraform apply -var-file=$(tfvarsFile) -auto-approve
+      displayName: Terraform Apply
+      condition: eq('${{ parameters.action }}', 'apply')
+      env:
+        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+        AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+
+    - script: |
+        cd terraform
         terraform destroy -var-file=$(tfvarsFile) -auto-approve
       displayName: Terraform Destroy
+      condition: eq('${{ parameters.action }}', 'destroy')
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)

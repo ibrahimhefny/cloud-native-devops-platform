@@ -33,17 +33,7 @@ stages:
   displayName: SonarQube Code Analysis
   jobs:
   - job: sonar_scan
-    displayName: Run Sonar Scanner
     steps:
-
-    - script: |
-        sudo apt update
-        sudo apt install unzip -y
-        wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-        unzip sonar-scanner-cli-*.zip
-        sudo mv sonar-scanner-*/ /opt/sonar-scanner
-        export PATH=$PATH:/opt/sonar-scanner/bin
-      displayName: Install Sonar Scanner
 
     - script: |
         export PATH=$PATH:/opt/sonar-scanner/bin
@@ -51,9 +41,8 @@ stages:
           -Dsonar.projectKey=hello-app \
           -Dsonar.sources=. \
           -Dsonar.host.url=http://localhost:9000 \
-          -Dsonar.login=sqp_1c5ac0dc78d47195a0954e621d7cb0c447e645a9
+          -Dsonar.login=$(SONAR_TOKEN)
       displayName: Run Sonar Scan
-
 
 # =========================
 # Stage 1: Init & Plan
@@ -121,9 +110,7 @@ stages:
         AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
 
     - script: |
-        cd terraform
-        terraform apply -auto-approve $(Pipeline.Workspace)/terraform-plan/tfpla
- 
+        terraform apply -auto-approve $(Pipeline.Workspace)/terraform-plan/tfplan
       displayName: Terraform Apply
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)

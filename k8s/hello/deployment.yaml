@@ -17,4 +17,11 @@ spec:
           image: nginx:alpine
           ports:
             - containerPort: 80
+env:
+  - name: MONGO_URI
+    valueFrom:
+      secretKeyRef:
+        name: mongodb-secret
+        key: MONGO_URI
+              
 

@@ -50,7 +50,7 @@ stages:
         sonar-scanner \
           -Dsonar.projectKey=hello-app \
           -Dsonar.sources=. \
-          -Dsonar.host.url=http://localhost:9000 \
+          -Dsonar.host.url=http://192.168.159.131:9000 \
           -Dsonar.login=$(SONAR_TOKEN)
       displayName: Run Sonar Scan
 

@@ -46,3 +46,6 @@ charts/*.tgz
 # Kubernetes
 kubeconfig
 *.kubeconfig
+aws/
+awscliv2.zip
+terraform/argocd*

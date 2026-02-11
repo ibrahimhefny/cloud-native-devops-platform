@@ -41,7 +41,7 @@ stages:
           -Dsonar.projectKey=hello-app \
           -Dsonar.sources=. \
           -Dsonar.host.url=http://localhost:9000 \
-          -Dsonar.login=$(SONAR_TOKEN)
+          -Dsonar.login=sqp_1c5ac0dc78d47195a0954e621d7cb0c447e645a9
       displayName: Run Sonar Scan
 
 # =========================

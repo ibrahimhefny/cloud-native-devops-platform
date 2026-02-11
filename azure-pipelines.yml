@@ -102,7 +102,7 @@ stages:
 
     - script: |
         cd terraform
-        terraform init -reconfigure
+        terraform init 
       displayName: Terraform Init (Apply)
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)

@@ -27,6 +27,24 @@ pool:
 stages:
 
 # =========================
+# Stage 0: SonarQube Analysis
+# =========================
+- stage: SonarQubeAnalysis
+  displayName: SonarQube Code Analysis
+  jobs:
+  - job: sonar_scan
+    displayName: Run Sonar Scanner
+    steps:
+
+    - script: |
+        sonar-scanner \
+          -Dsonar.projectKey=hello-app \
+          -Dsonar.sources=. \
+          -Dsonar.host.url=http://localhost:9000 \
+          -Dsonar.login=$(SONAR_TOKEN)
+      displayName: Sonar Scan
+
+# =========================
 # Stage 1: Init & Plan
 # =========================
 - stage: InitAndPlan
@@ -93,7 +111,8 @@ stages:
 
     - script: |
         cd terraform
-        terraform apply -auto-approve $(Pipeline.Workspace)/terraform-plan/tfplan
+        terraform apply -auto-approve $(Pipeline.Workspace)/terraform-plan/tfpla
+ 
       displayName: Terraform Apply
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)

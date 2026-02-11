@@ -27,9 +27,9 @@ stages:
 # =========================
 # Stage 0: SonarQube
 # =========================
-- stage: SonarQubeAnalysis
+- stage: SonarQube
   jobs:
-  - job: sonar_scan
+  - job: sonar
     steps:
     - script: |
         export PATH=$PATH:/opt/sonar-scanner/bin
@@ -38,61 +38,81 @@ stages:
           -Dsonar.sources=. \
           -Dsonar.host.url=http://localhost:9000 \
           -Dsonar.login=sqp_1c5ac0dc78d47195a0954e621d7cb0c447e645a9
-      displayName: Run Sonar Scan
+      displayName: Run Sonar
 
 
 # =========================
-# Stage 1: Terraform Apply
+# Stage 1: Terraform Plan
 # =========================
-- stage: Terraform
+- stage: Plan
   jobs:
-  - job: terraform_job
+  - job: terraform_plan
     variables:
     - group: aws-credentials
     steps:
 
     - script: terraform version
-      displayName: Check Terraform
+      displayName: Terraform Version
 
     - script: |
         cd terraform
-        terraform init
-      displayName: Terraform Init
-      env:
-        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-        AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
-
-    - script: |
-        cd terraform
+        terraform init -input=false
         terraform validate
-      displayName: Terraform Validate
-
-    - script: |
-        cd terraform
-        terraform plan -var-file=$(tfvarsFile)
-      displayName: Terraform Plan
-      condition: eq('${{ parameters.action }}', 'apply')
+        terraform plan -var-file=$(tfvarsFile) -out=tfplan
+      displayName: Terraform Init + Plan
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
         AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
 
+    - publish: terraform/tfplan
+      artifact: tfplan
+
+
+# =========================
+# Stage 2: Terraform Apply
+# =========================
+- stage: Apply
+  dependsOn: Plan
+  condition: and(succeeded(), eq('${{ parameters.action }}','apply'))
+  jobs:
+  - job: terraform_apply
+    variables:
+    - group: aws-credentials
+    steps:
+
+    - download: current
+      artifact: tfplan
+
     - script: |
         cd terraform
-        terraform apply -var-file=$(tfvarsFile) -auto-approve
+        terraform init -input=false
+        cp $(Pipeline.Workspace)/tfplan/tfplan .
+        terraform apply -auto-approve tfplan
       displayName: Terraform Apply
-      condition: eq('${{ parameters.action }}', 'apply')
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
         AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
 
+
+# =========================
+# Stage 3: Terraform Destroy
+# =========================
+- stage: Destroy
+  dependsOn: Plan
+  condition: and(succeeded(), eq('${{ parameters.action }}','destroy'))
+  jobs:
+  - job: terraform_destroy
+    variables:
+    - group: aws-credentials
+    steps:
+
     - script: |
         cd terraform
+        terraform init -input=false
         terraform destroy -var-file=$(tfvarsFile) -auto-approve
       displayName: Terraform Destroy
-      condition: eq('${{ parameters.action }}', 'destroy')
       env:
         AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
         AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)

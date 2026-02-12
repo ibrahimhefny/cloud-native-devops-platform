@@ -30,4 +30,5 @@ stages:
         dockerfile: '**/Dockerfile'
         containerRegistry: 'dockerhub-connection'
         tags: |
+          $(Build.BuildId)
           latest

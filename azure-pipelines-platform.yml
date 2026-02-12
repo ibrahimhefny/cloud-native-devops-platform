@@ -13,13 +13,20 @@ stages:
   - job: InstallPlatform
     steps:
 
-    - task: AWSCLI@1
-      inputs:
-        awsCredentials: 'aws-service-connection'
-        regionName: '$(AWS_REGION)'
-        awsCommand: 'eks'
-        awsSubCommand: 'update-kubeconfig'
-        awsArguments: '--name $(CLUSTER_NAME)'
+    - script: |
+        echo "Installing AWS CLI"
+        sudo apt-get update
+        sudo apt-get install -y awscli
+      displayName: Install AWS CLI
+
+    - script: |
+        echo "Configuring AWS credentials"
+        export AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID)
+        export AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY)
+        export AWS_DEFAULT_REGION=$(AWS_REGION)
+
+        aws eks update-kubeconfig --region $(AWS_REGION) --name $(CLUSTER_NAME)
+      displayName: Configure EKS Access
 
     - script: |
         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
@@ -28,12 +35,14 @@ stages:
     - script: |
         helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
         helm repo update
-        helm install ingress-nginx ingress-nginx/ingress-nginx \
+        helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
           --namespace ingress-nginx \
           --create-namespace
-      displayName: Install Ingress
+      displayName: Install Ingress Controller
 
     - script: |
         kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
         kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+        kubectl wait --for=condition=available deployment/argocd-server \
+          -n argocd --timeout=300s
       displayName: Install ArgoCD

@@ -6,6 +6,8 @@ pool:
 
 variables:
   IMAGE_NAME: ibrahimhefny/voting-app
+  SONAR_HOST_URL: 'http://your-sonarqube-server:9000'  # Update this
+  SONAR_TOKEN: $(SONAR_TOKEN)  # Store token as secret variable
 
 stages:
 - stage: CI
@@ -18,32 +20,28 @@ stages:
     - checkout: self
 
     # ======================
-    # 1️⃣ Prepare SonarQube
+    # 1️⃣ Run SonarQube Scanner via CLI
     # ======================
-    - task: SonarQubePrepare@7
-      inputs:
-        SonarQube: 'sonarqube-connection'
-        scannerMode: 'CLI'
-        configMode: 'manual'
-        cliProjectKey: 'voting-app'
-        cliProjectName: 'voting-app'
-        cliSources: '.'
-        # REMOVED branch properties - only available in Developer Edition+
+    - script: |
+        # Download sonar-scanner if not present
+        if [ ! -d "sonar-scanner" ]; then
+          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
+          unzip sonar-scanner-cli-4.8.0.2856-linux.zip
+          mv sonar-scanner-4.8.0.2856-linux sonar-scanner
+        fi
+        
+        # Run analysis
+        ./sonar-scanner/bin/sonar-scanner \
+          -Dsonar.projectKey=voting-app \
+          -Dsonar.projectName=voting-app \
+          -Dsonar.sources=. \
+          -Dsonar.host.url=$(SONAR_HOST_URL) \
+          -Dsonar.login=$(SONAR_TOKEN)
+      displayName: 'SonarQube Analysis'
+      workingDirectory: $(Build.SourcesDirectory)
 
     # ======================
-    # 2️⃣ Run Sonar Analysis
-    # ======================
-    - task: SonarQubeAnalyze@7
-
-    # ======================
-    # 3️⃣ Publish Sonar Results
-    # ======================
-    - task: SonarQubePublish@7
-      inputs:
-        pollingTimeoutSec: '300'
-
-    # ======================
-    # 4️⃣ Build & Push Docker
+    # 2️⃣ Build & Push Docker
     # ======================
     - task: Docker@2
       displayName: Build and Push Image

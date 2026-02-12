@@ -14,32 +14,34 @@ stages:
     steps:
 
     - script: |
+        echo "AWS Version:"
         aws --version
-      displayName: Verify AWS CLI
 
-    - script: |
-        export AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID)
-        export AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY)
-        export AWS_DEFAULT_REGION=$(AWS_REGION)
+        echo "Configuring kubeconfig..."
+        aws eks update-kubeconfig \
+          --region $AWS_REGION \
+          --name $CLUSTER_NAME
 
-        aws eks update-kubeconfig --region $(AWS_REGION) --name $(CLUSTER_NAME)
-      displayName: Configure EKS Access
+        echo "Installing Helm..."
+        curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-    - script: |
-        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-      displayName: Install Helm
-
-    - script: |
+        echo "Installing Ingress..."
         helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
         helm repo update
         helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
           --namespace ingress-nginx \
           --create-namespace
-      displayName: Install Ingress Controller
 
-    - script: |
+        echo "Installing ArgoCD..."
         kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
         kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
         kubectl wait --for=condition=available deployment/argocd-server \
           -n argocd --timeout=300s
-      displayName: Install ArgoCD
+
+      displayName: Bootstrap Platform
+
+      env:
+        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+        AWS_REGION: $(AWS_REGION)
+        CLUSTER_NAME: $(CLUSTER_NAME)

@@ -1,0 +1,56 @@
+trigger: none
+
+resources:
+  pipelines:
+  - pipeline: CI_Pipeline
+    source: 'azure-pipeline-CI'
+    trigger:
+      branches:
+        include:
+        - main
+
+pool:
+  name: self-hosted-linux
+
+variables:
+  IMAGE_NAME: 'ibrahimhefny/voting-app'
+  K8S_MANIFESTS_PATH: 'k8s/voting'
+
+stages:
+
+- stage: UpdateManifest
+  displayName: 'Update Image Tag for ArgoCD'
+  jobs:
+  - job: UpdateImageTag
+    displayName: 'Update Deployment YAML'
+    steps:
+    
+    - checkout: self
+      persistCredentials: true
+    
+    - script: |
+      git config user.name "Ibrahimhefny"
+        git config user.email "ibrahim.mo.hefny@gmail.com"
+      displayName: 'Configure Git'
+    
+    - script: |
+        NEW_TAG="$(resources.pipeline.CI_Pipeline.runID)"
+        echo "New image tag: ${NEW_TAG}"
+        
+        cd $(K8S_MANIFESTS_PATH)
+        
+        sed -i "s|image: $(IMAGE_NAME):.*|image: $(IMAGE_NAME):${NEW_TAG}|g" deployment.yaml
+        
+        echo "Updated image:"
+        grep "image: $(IMAGE_NAME)" deployment.yaml
+      displayName: 'Update Image Tag'
+    
+    - script: |
+        NEW_TAG="$(resources.pipeline.CI_Pipeline.runID)"
+        
+        git add $(K8S_MANIFESTS_PATH)/deployment.yaml
+        git commit -m "Update image to build ${NEW_TAG} [skip ci]" || echo "No changes"
+        git push origin HEAD:main
+      displayName: 'Commit & Push'
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)

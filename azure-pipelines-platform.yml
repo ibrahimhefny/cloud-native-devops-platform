@@ -13,35 +13,30 @@ stages:
   - job: InstallPlatform
     steps:
 
+    - task: AWSCLI@1
+      displayName: Update kubeconfig
+      inputs:
+        awsCredentials: 'aws-service-connection'
+        regionName: '$(AWS_REGION)'
+        awsCommand: 'eks'
+        awsSubCommand: 'update-kubeconfig'
+        awsArguments: '--name $(CLUSTER_NAME)'
+
     - script: |
-        echo "AWS Version:"
-        aws --version
-
-        echo "Configuring kubeconfig..."
-        aws eks update-kubeconfig \
-          --region $AWS_REGION \
-          --name $CLUSTER_NAME
-
-        echo "Installing Helm..."
         curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      displayName: Install Helm
 
-        echo "Installing Ingress..."
+    - script: |
         helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
         helm repo update
         helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
           --namespace ingress-nginx \
           --create-namespace
+      displayName: Install Ingress
 
-        echo "Installing ArgoCD..."
+    - script: |
         kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
         kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
         kubectl wait --for=condition=available deployment/argocd-server \
           -n argocd --timeout=300s
-
-      displayName: Bootstrap Platform
-
-      env:
-        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-        AWS_REGION: $(AWS_REGION)
-        CLUSTER_NAME: $(CLUSTER_NAME)
+      displayName: Install ArgoCD

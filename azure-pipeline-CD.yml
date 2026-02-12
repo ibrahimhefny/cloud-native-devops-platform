@@ -47,6 +47,8 @@ stages:
           - script: |
               NEW_TAG=$(resources.pipeline.CI_Pipeline.runID)
 
+              git pull origin main --rebase
+
               git add $(K8S_MANIFESTS_PATH)/deployment.yaml
               git commit -m "Update image to build ${NEW_TAG} [skip ci]" || echo "No changes"
               git push origin HEAD:main

@@ -36,20 +36,16 @@ stages:
               NEW_TAG=$(resources.pipeline.CI_Pipeline.runID)
               echo "New image tag: ${NEW_TAG}"
 
-              cd $(K8S_MANIFESTS_PATH)
+              # دايمًا خليك متزامن مع آخر main
+              git fetch origin main
+              git reset --hard origin/main
 
-              sed -i "s|image: $(IMAGE_NAME):.*|image: $(IMAGE_NAME):${NEW_TAG}|g" deployment.yaml
-
-              echo "Updated image:"
-              grep "image: $(IMAGE_NAME)" deployment.yaml
-            displayName: Update Image Tag
-
-          - script: |
-              NEW_TAG=$(resources.pipeline.CI_Pipeline.runID)
-
-              git pull origin main --rebase
+              # عدل الصورة
+              sed -i "s|image: $(IMAGE_NAME):.*|image: $(IMAGE_NAME):${NEW_TAG}|g" $(K8S_MANIFESTS_PATH)/deployment.yaml
 
               git add $(K8S_MANIFESTS_PATH)/deployment.yaml
               git commit -m "Update image to build ${NEW_TAG} [skip ci]" || echo "No changes"
-              git push origin HEAD:main
-            displayName: Commit & Push
+
+              # Push آمن
+              git push origin HEAD:main --force-with-lease
+            displayName: Update, Commit & Safe Push

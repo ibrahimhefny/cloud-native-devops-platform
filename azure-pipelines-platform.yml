@@ -1,4 +1,5 @@
-trigger: none
+trigger:
+- main
 
 pool:
   vmImage: ubuntu-latest
@@ -6,11 +7,41 @@ pool:
 variables:
   AWS_REGION: us-east-1
   CLUSTER_NAME: nonprod-eks
+  IMAGE_NAME: ibrahimhefny/yourapp
 
 stages:
+
+# =========================
+# 1️⃣ CI STAGE
+# =========================
+- stage: CI
+  displayName: Build and Push Docker Image
+  jobs:
+  - job: BuildAndPush
+    displayName: Build & Push
+    steps:
+
+    - checkout: self
+
+    - task: Docker@2
+      displayName: Build and Push Image
+      inputs:
+        command: buildAndPush
+        repository: $(IMAGE_NAME)
+        dockerfile: '**/Dockerfile'
+        containerRegistry: 'dockerhub-connection'
+        tags: |
+          latest
+
+# =========================
+# 2️⃣ PLATFORM STAGE
+# =========================
 - stage: Platform
+  displayName: Bootstrap EKS Platform
+  dependsOn: CI
   jobs:
   - job: InstallPlatform
+    displayName: Install Ingress & ArgoCD
     steps:
 
     - task: AWSCLI@1
@@ -22,21 +53,28 @@ stages:
         awsSubCommand: 'update-kubeconfig'
         awsArguments: '--name $(CLUSTER_NAME)'
 
-    - script: |
-        curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-      displayName: Install Helm
+    - task: AWSShellScript@1
+      displayName: Install Ingress & ArgoCD
+      inputs:
+        awsCredentials: 'aws-service-connection'
+        regionName: '$(AWS_REGION)'
+        scriptType: 'inline'
+        inlineScript: |
+          echo "Installing Helm..."
+          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-    - script: |
-        helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-        helm repo update
-        helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
-          --namespace ingress-nginx \
-          --create-namespace
-      displayName: Install Ingress
+          echo "Installing Ingress..."
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo update
+          helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+            --namespace ingress-nginx \
+            --create-namespace
 
-    - script: |
-        kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
-        kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-        kubectl wait --for=condition=available deployment/argocd-server \
-          -n argocd --timeout=300s
-      displayName: Install ArgoCD
+          echo "Installing ArgoCD..."
+          kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+          kubectl wait --for=condition=available deployment/argocd-server \
+            -n argocd --timeout=300s
+
+          echo "Platform setup completed successfully."

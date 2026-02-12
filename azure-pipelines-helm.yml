@@ -1,77 +1,39 @@
 trigger: none
 
-resources:
-  pipelines:
-  - pipeline: terraform
-    source: ibrahimhefny.cloud-native-devops-platform
-    trigger:
-      branches:
-        include:
-        - main
-
-parameters:
-- name: environment
-  displayName: 'Environment'
-  type: string
-  default: nonprod
-  values:
-  - nonprod
-  - prod
-
-variables:
-- group: aws-credentials
-
-- name: helmRelease
-  value: my-app
-
-- name: helmNamespace
-  value: my-app
-
 pool:
   vmImage: ubuntu-latest
 
-stages:
+variables:
+  AWS_REGION: us-east-1
+  CLUSTER_NAME: your-cluster-name
 
-# =========================
-# Stage: Helm Deploy
-# =========================
-- stage: HelmDeploy
-  displayName: 'Helm Deploy'
+stages:
+- stage: Platform
   jobs:
-  - job: deploy
-    displayName: 'Deploy to EKS using Helm'
+  - job: InstallPlatform
     steps:
 
-    # 1️⃣ Install Helm
+    - task: AWSCLI@1
+      inputs:
+        awsCredentials: 'aws-service-connection'
+        regionName: '$(AWS_REGION)'
+        awsCommand: 'eks'
+        awsSubCommand: 'update-kubeconfig'
+        awsArguments: '--name $(CLUSTER_NAME)'
+
     - script: |
         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-      displayName: 'Install Helm'
+      displayName: Install Helm
 
-    # 2️⃣ Download EKS info from Terraform pipeline
-    - download: terraform
-      artifact: eks-info
-      displayName: 'Download EKS info'
-
-    # 3️⃣ Configure kubeconfig dynamically
     - script: |
-        CLUSTER_NAME=$(cat $(Pipeline.Workspace)/eks-info/cluster_name.txt)
-        REGION=$(cat $(Pipeline.Workspace)/eks-info/region.txt)
+        helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+        helm repo update
+        helm install ingress-nginx ingress-nginx/ingress-nginx \
+          --namespace ingress-nginx \
+          --create-namespace
+      displayName: Install Ingress
 
-        echo "Using cluster: $CLUSTER_NAME"
-        echo "Using region: $REGION"
-
-        aws eks update-kubeconfig \
-          --name $CLUSTER_NAME \
-          --region $REGION
-      displayName: 'Configure kubeconfig'
-      env:
-        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-
-    # 4️⃣ Helm deploy
     - script: |
-        helm upgrade --install $(helmRelease) ./helm/my-app \
-          --namespace $(helmNamespace) \
-          --create-namespace \
-          -f ./helm/my-app/values-${{ parameters.environment }}.yaml
-      displayName: 'Helm Deploy'
+        kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+        kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+      displayName: Install ArgoCD

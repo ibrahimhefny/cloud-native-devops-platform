@@ -2,7 +2,7 @@ trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  name: self-hosted-linux
 
 variables:
   IMAGE_NAME: ibrahimhefny/voting-app
@@ -20,9 +20,9 @@ stages:
     # ======================
     # 1️⃣ Prepare SonarQube
     # ======================
-    - task: SonarQubePrepare@5
+    - task: SonarQubePrepare@7
       inputs:
-        SonarQube: 'sonarqube-connection'                       
+        SonarQube: 'sonarqube-connection'
         scannerMode: 'CLI'
         configMode: 'manual'
         cliProjectKey: 'voting-app'
@@ -32,12 +32,12 @@ stages:
     # ======================
     # 2️⃣ Run Sonar Analysis
     # ======================
-    - task: SonarQubeAnalyze@5
+    - task: SonarQubeAnalyze@7
 
     # ======================
     # 3️⃣ Publish Sonar Results
     # ======================
-    - task: SonarQubePublish@5
+    - task: SonarQubePublish@7
       inputs:
         pollingTimeoutSec: '300'
 

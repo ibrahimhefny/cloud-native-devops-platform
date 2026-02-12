@@ -22,13 +22,17 @@ stages:
     # ======================.'
     - task: SonarQubePrepare@7
       inputs:
-       SonarQube: 'sonarqube-connection'
-       scannerMode: 'CLI'
-       configMode: 'manual'
-       cliProjectKey: 'voting-app'
-       cliProjectName: 'voting-app'
-       cliSources: '.'
-       extraProperties: sonar.branch.name=
+        SonarQube: 'sonarqube-connection'
+        scannerMode: 'CLI'
+        configMode: 'manual'
+        cliProjectKey: 'voting-app'
+        cliProjectName: 'voting-app'
+        cliSources: '.'
+        extraProperties: |
+          sonar.branch.name=main
+          sonar.pullrequest.key=
+          sonar.pullrequest.branch=
+          sonar.pullrequest.base=
 
     # ======================
     # 2️⃣ Run Sonar Analysis

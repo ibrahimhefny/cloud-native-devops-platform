@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: voting-app
-          image: ibrahimhefny/voting-app:latest    
+          image: ibrahimhefny/voting-app:123   
           ports:
             - containerPort: 8000
           env:

@@ -30,7 +30,7 @@ stages:
     
     - script: |
       git config user.name "Ibrahimhefny"
-        git config user.email "ibrahim.mo.hefny@gmail.com"
+      git config user.email "ibrahim.mo.hefny@gmail.com"
       displayName: 'Configure Git'
     
     - script: |

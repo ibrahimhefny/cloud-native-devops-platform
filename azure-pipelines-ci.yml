@@ -1,0 +1,55 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  IMAGE_NAME: ibrahimhefny/voting-app
+
+stages:
+- stage: CI
+  displayName: Continuous Integration
+  jobs:
+  - job: BuildAndScan
+    displayName: Sonar + Build + Push
+    steps:
+
+    - checkout: self
+
+    # ======================
+    # 1️⃣ Prepare SonarQube
+    # ======================
+    - task: SonarQubePrepare@5
+      inputs:
+        SonarQube: 'sonarqube-connection'                       
+        scannerMode: 'CLI'
+        configMode: 'manual'
+        cliProjectKey: 'voting-app'
+        cliProjectName: 'voting-app'
+        cliSources: '.'
+
+    # ======================
+    # 2️⃣ Run Sonar Analysis
+    # ======================
+    - task: SonarQubeAnalyze@5
+
+    # ======================
+    # 3️⃣ Publish Sonar Results
+    # ======================
+    - task: SonarQubePublish@5
+      inputs:
+        pollingTimeoutSec: '300'
+
+    # ======================
+    # 4️⃣ Build & Push Docker
+    # ======================
+    - task: Docker@2
+      displayName: Build and Push Image
+      inputs:
+        command: buildAndPush
+        repository: $(IMAGE_NAME)
+        dockerfile: '**/Dockerfile'
+        containerRegistry: 'dockerhub-connection'
+        tags: |
+          latest

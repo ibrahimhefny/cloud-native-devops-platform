@@ -7,7 +7,7 @@ pool:
 variables:
   AWS_REGION: us-east-1
   CLUSTER_NAME: nonprod-eks
-  IMAGE_NAME: ibrahimhefny/yourapp
+  IMAGE_NAME: ibrahimhefny/devops-platform
 
 stages:
 

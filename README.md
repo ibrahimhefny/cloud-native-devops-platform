@@ -1,15 +1,23 @@
 # 🚀 Cloud-Native DevOps Platform 
 
-An automated end-to-end platform for deploying a microservices voting application on **Azure Kubernetes Service (AKS)** and **AWS EKS** using **Terraform**, **Azure DevOps Pipelines**, and **Argo CD**.
+
+End-to-end DevOps platform for deploying a microservices applicationS on **AWS EKS** using **Terraform** for IaC, **Azure DevOps Pipelines** for CI, and **Argo CD** with **Helm** for GitOps-based CD.
 
 ---
 
-## ✨ Project Overview
-This repository demonstrates a full GitOps lifecycle:
-* **Infrastructure as Code (IaC):** Modular Terraform and Managed Identities.
-* **CI/CD Pipelines:** Automated build, scan, and push workflows using Azure DevOps Pipelines.
-* **GitOps Deployment:** Continuous Delivery via Argo CD for the hello & voting applications.
-* **Security:** Image scanning and secure container registry integration.
+## 🏗️ Execution Workflow
+
+The project was executed in a structured 8-step process:
+
+1. **Infrastructure Provisioning:** Automated setup of **AWS EKS** using **Terraform**.
+2. **Networking & API Exposure:** Implementation of **Ingress**, **API Gateway**, and **Cognito** for secure access.
+3. **Platform Services:** Deploying core DevOps tools (**Nexus**, **SonarQube**, and **Argo CD**).
+4. **Backend Microservices:** Containerizing applications using **Docker** and **Helm**.
+5. **CI Pipeline:** Automated build and security scanning via **Azure DevOps**.
+6. **CD Pipeline & GitOps:** Continuous Delivery with **Argo CD** and vulnerability scanning with **Trivy**.
+7. **Secrets Management:** Secure credential handling through **HashiCorp Vault** integration.
+8. **Database & Monitoring:** Configuring **MongoDB Atlas** and **Datadog** for observability.
+   
 
 ---
 
@@ -40,7 +48,7 @@ This repository demonstrates a full GitOps lifecycle:
 
 * [![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazonaws&logoColor=white)](./screenshots/aws-eks.png.png)
 * [![Terraform](https://img.shields.io/badge/Terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)](./screenshots/terraform-output.png.png)
-* [![Azure Pipelines](https://img.shields.io/badge/Azure-%230072C6.svg?style=for-the-badge&logo=microsoftazure&logoColor=white)](./screenshots/azure-portal.png.png)
+* [![Azure Pipelines](https://img.shields.io/badge/Azure_Pipelines-%230072C6.svg?style=for-the-badge&logo=microsoftazure&logoColor=white)](./screenshots/azure-portal.png.png)
 * [![Docker](https://img.shields.io/badge/Docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](./screenshots/docker-hub.png.png)
 * [![ArgoCD Hello](https://img.shields.io/badge/ArgoCD_Hello-%23ef7b4d.svg?style=for-the-badge&logo=argocd&logoColor=white)](./screenshots/argo-hello.png.png)
 * [![ArgoCD Voting](https://img.shields.io/badge/ArgoCD_Voting-%23ef7b4d.svg?style=for-the-badge&logo=argocd&logoColor=white)](./screenshots/argo-voting.png.png)

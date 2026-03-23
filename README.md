@@ -6,17 +6,17 @@ An automated end-to-end platform for deploying a microservices voting applicatio
 
 ## ✨ Project Overview
 This repository demonstrates a full GitOps lifecycle:
-* **Infrastructure as Code (IaC):** Modular Terraform for VNET, AKS, and Managed Identities.
-* **CI/CD Pipelines:** Automated build, scan, and push workflows using Azure DevOps.
-* **GitOps Deployment:** Continuous Delivery via Argo CD for the voting application.
+* **Infrastructure as Code (IaC):** Modular Terraform and Managed Identities.
+* **CI/CD Pipelines:** Automated build, scan, and push workflows using Azure DevOps Pipelines.
+* **GitOps Deployment:** Continuous Delivery via Argo CD for the hello & voting applications.
 * **Security:** Image scanning and secure container registry integration.
 
 ---
 
 ## 🧭 Architecture Summary
-* **Cloud Providers:** Microsoft Azure & AWS.
+* **Cloud Providers:**  AWS.
 * **Container Registry:** Docker Hub.
-* **Orchestration:** AKS (Azure) & EKS (AWS).
+* **Orchestration:**  EKS (AWS).
 * **CD Pattern:** GitOps with Argo CD tracking the `/k8s` manifests.
 * **Agent:** Self-hosted Linux agents for pipeline execution.
 
@@ -37,13 +37,13 @@ This repository demonstrates a full GitOps lifecycle:
 ## 🧰 Tech Stack & Implementation Proof
 *(Click on badges to view implementation screenshots)*
 
-* [![Azure](https://img.shields.io/badge/Azure-%230072C6.svg?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://raw.githubusercontent.com/ibrahimhefny/cloud-native-devops-platform/main/screenshots/azure-portal.png)
-* [![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazonaws&logoColor=white)](https://raw.githubusercontent.com/ibrahimhefny/cloud-native-devops-platform/main/screenshots/aws-eks.png)
-* [![Terraform](https://img.shields.io/badge/Terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)](https://raw.githubusercontent.com/ibrahimhefny/cloud-native-devops-platform/main/screenshots/terraform-output.png)
-* [![Docker](https://img.shields.io/badge/Docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://raw.githubusercontent.com/ibrahimhefny/cloud-native-devops-platform/main/screenshots/docker-hub.png)
-* [![ArgoCD Hello](https://img.shields.io/badge/ArgoCD_Hello-%23ef7b4d.svg?style=for-the-badge&logo=argocd&logoColor=white)](https://raw.githubusercontent.com/ibrahimhefny/cloud-native-devops-platform/main/screenshots/argo-hello.png)
-* [![ArgoCD Voting](https://img.shields.io/badge/ArgoCD_Voting-%23ef7b4d.svg?style=for-the-badge&logo=argocd&logoColor=white)](https://raw.githubusercontent.com/ibrahimhefny/cloud-native-devops-platform/main/screenshots/argo-voting.png)
-
+* [![Azure](https://img.shields.io/badge/Azure-%230072C6.svg?style=for-the-badge&logo=microsoftazure&logoColor=white)](./screenshots/azure_portal.png.png)
+* [![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazonaws&logoColor=white)](./screenshots/aws-eks.png.png)
+* [![Terraform](https://img.shields.io/badge/Terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)](./screenshots/terraform-output.png.png)
+* [![Docker](https://img.shields.io/badge/Docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](./screenshots/docker-hub.png.png)
+* [![ArgoCD Hello](https://img.shields.io/badge/ArgoCD_Hello-%23ef7b4d.svg?style=for-the-badge&logo=argocd&logoColor=white)](./screenshots/argo-hello.png.png)
+* [![ArgoCD Voting](https://img.shields.io/badge/ArgoCD_Voting-%23ef7b4d.svg?style=for-the-badge&logo=argocd&logoColor=white)](./screenshots/argo-voting.png.png)
+* ![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
 ---
 
 ## 🧪 CI/CD Pipelines (Azure DevOps)

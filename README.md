@@ -1,24 +1,18 @@
-# 🚀 Cloud-Native DevOps Platform (Azure Edition)
+# 🚀 Cloud-Native DevOps Platform 
 
-An automated end-to-end platform for deploying a microservices voting application on **Azure Kubernetes Service (AKS)** using **Terraform**, **Azure DevOps Pipelines**, and **Argo CD**.
-
----
-
-## ✨ Project Overview
-This repository demonstrates a full GitOps lifecycle:
-* **Infrastructure as Code (IaC):** Modular Terraform for VNET, AKS, and Managed Identities.
-* **CI/CD Pipelines:** Automated build, scan, and push workflows using Azure DevOps.
-* **GitOps Deployment:** Continuous Delivery via Argo CD for the voting application.
-* **Security:** Image scanning and secure container registry integration.
+An automated GitOps platform demonstrating multi-cloud infrastructure and microservices deployment.
 
 ---
 
-## 🧭 Architecture Summary
-* **Cloud Provider:** Microsoft Azure.
-* **Container Registry:** Docker Hub (or Azure Container Registry).
-* **Orchestration:** AKS (Azure Kubernetes Service).
-* **CD Pattern:** GitOps with Argo CD tracking the `/k8s` manifests.
-* **Agent:** Self-hosted Linux agents for pipeline execution.
+## 🧰 Tech Stack & Implementation Proof
+*(Click on badges to see my implementation screenshots)*
+
+* [![Azure](https://img.shields.io/badge/azure-%230072C6.svg?style=for-the-badge&logo=microsoftazure&logoColor=white)](./screenshots/azure-portal.png)
+* [![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazonaws&logoColor=white)](./screenshots/aws-eks.png)
+* [![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)](./screenshots/terraform-output.png)
+* [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](./screenshots/docker-hub.png)
+* [![ArgoCD Hello](https://img.shields.io/badge/ArgoCD_Hello-%23ef7b4d.svg?style=for-the-badge&logo=argocd&logoColor=white)](./screenshots/argo-hello.png)
+* [![ArgoCD Voting](https://img.shields.io/badge/ArgoCD_Voting-%23ef7b4d.svg?style=for-the-badge&logo=argocd&logoColor=white)](./screenshots/argo-voting.png)
 
 ---
 
@@ -26,41 +20,15 @@ This repository demonstrates a full GitOps lifecycle:
 
 | Path | Purpose |
 | :--- | :--- |
-| `terraform/` | Terraform modules for Azure infrastructure (Network, AKS) |
-| `pipelines/` | **[NEW]** Centralized Azure DevOps YAML definitions |
-| `k8s/` | Kubernetes manifests and configuration files |
-| `argo/` | Argo CD Application & Project specs |
-| `voting-app/` | Application source code (Flask, Node.js) & Dockerfiles |
+| `terraform/` | IaC modules for Hybrid-Cloud setup (VNET, AKS, EKS) |
+| `pipelines/` | Centralized Azure DevOps YAML definitions |
+| `k8s/` | Kubernetes manifests for both Hello and Voting apps |
+| `argo/` | Argo CD GitOps Application & Project specs |
+| `voting-app/` | Microservices source code & Dockerfiles |
 
 ---
 
-## 🧪 CI/CD Pipelines (Azure DevOps)
-
-| Pipeline | Purpose | Trigger |
-| :--- | :--- | :--- |
-| `azure-pipelines-ci.yml` | Build & Push Docker images with unique Build IDs | Push to `main` |
-| `azure-pipelines-infra.yml` | Terraform Plan/Apply for Azure Resources | Manual/Scheduled |
-| `azure-pipelines-cd.yml` | Argo CD sync and manifest updates | Image update |
-
----
-
-## 🛠️ Tech Stack & Tools
-* ![Azure](https://img.shields.io/badge/azure-%230072C6.svg?style=for-the-badge&logo=microsoftazure&logoColor=white)
-* ![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
-* ![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
-* ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
-* ![ArgoCD](https://img.shields.io/badge/argocd-%23ef7b4d.svg?style=for-the-badge&logo=argocd&logoColor=white)
-
----
-
-## 📈 Observability & Quality
-* **SonarQube:** Static Code Analysis (currently being integrated).
-* **Docker Hub:** Centralized image management.
-* **Azure Monitor:** (Optional) monitoring for AKS clusters.
-
----
-
-## 🛡️ Security Highlights
-* **Managed Identities:** Secure access to Azure resources without passwords.
-* **Private Subnets:** AKS nodes are isolated within a private VNET.
-* **Docker Multi-stage builds:** Optimized and secure image sizes.
+## 🧪 CI/CD & GitOps Lifecycle
+1. **Infrastructure:** Terraform modules deployed via automated pipelines.
+2. **Continuous Integration:** Docker builds with unique tagging for microservices.
+3. **GitOps Delivery:** Argo CD manages two separate environments (Hello App & Voting App).

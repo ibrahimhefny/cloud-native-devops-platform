@@ -14,7 +14,6 @@ stages:
   - job: BuildAndPush
     displayName: Build + Push (Skip SonarQube for now)
     steps:
-
     - checkout: self
 
     # TODO: Fix SonarQube version and re-enable analysis

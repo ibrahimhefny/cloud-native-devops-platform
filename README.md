@@ -45,7 +45,7 @@ The project was executed in a structured 8-step process:
 ## 🧰 Tech Stack & Implementation Proof
 *(Click on badges to view implementation screenshots)*
 
-
+* [![Project Architecture](https://img.shields.io/badge/Architecture-Project-blue?style=for-the-badge&logoColor=white)](./screenshots/your-arch.png)
 * [![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazonaws&logoColor=white)](./screenshots/aws-eks.png.png)
 * [![Terraform](https://img.shields.io/badge/Terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)](./screenshots/terraform-output.png.png)
 * [![Azure Pipelines](https://img.shields.io/badge/Azure_Pipelines-%230072C6.svg?style=for-the-badge&logo=microsoftazure&logoColor=white)](./screenshots/azure-portal.png.png)
